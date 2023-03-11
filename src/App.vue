@@ -1,27 +1,23 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <editor v-model="state"></editor>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
+<script lang="ts" setup>
+import data from "./data.json";
+import editor from "./packages/editor";
+import { ref } from "vue";
+import { TeditorConfig } from './type/editor';
 
-@Options({
-  components: {
-    HelloWorld,
-  },
-})
-export default class App extends Vue {}
+let state = ref<TeditorConfig>(data);
+
 </script>
 
 <style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  top: 20px;
 }
 </style>
