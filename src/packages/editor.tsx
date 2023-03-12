@@ -1,10 +1,14 @@
-import { TeditorConfig } from '@/type/editor';
-import { defineComponent, computed, PropType, provide } from 'vue';
+import { TblockConfig, TeditorConfig } from '@/type/editor';
+import { defineComponent, computed, PropType, provide, ref } from 'vue';
 import editorBlock from './editor-block';
 import './editor.scss';
 
 import { registerConfig as config } from '@/utils/editor-config';
 import { componentConfigKey } from '@/type/editor';
+import { useMenuDragger } from './useMenuDragger';
+import deepcopy from 'deepcopy';
+import { useFocus } from './useFocus';
+import { useBlockDragger } from './useBlockDragger';
 export default defineComponent({
     props: {
         modelValue: {
@@ -22,21 +26,43 @@ export default defineComponent({
             get(): TeditorConfig {
                 return props.modelValue
             },
-            set(value: any) {
-                emit('update:modelValue', value)
+            set(value: TeditorConfig) {
+                emit('update:modelValue', deepcopy(value))
             }
         })
         const containerStyle = computed(() => ({
             width: editorConfig.value.container.width + 'px',
             height: editorConfig.value.container.height + 'px'
         }))
+        const containerRef = ref<HTMLElement | null>(null)
+        // 左侧菜单的拖拽
+        const { dragStart, dragEnd } = useMenuDragger(containerRef, editorConfig)
+
+        // 内容区点击获取焦点
+        const {
+            focusData,
+            blockMousedown,
+            clearBlocksFocus
+        } = useFocus(editorConfig, (e) => {  // 选中后可能直接就进行拖拽了
+            // 获取焦点后进行拖拽
+            mouseDown(e) // 点击时的event。
+        })
+
+        // 内容区多个元素的拖拽
+
+        const { mouseDown } = useBlockDragger(focusData)
+
         return () => (
             <div class='editor'>
                 <div class='editor-left'>
                     {/* 物料区，这里要渲染所有注册的组件列表 */}
                     {
                         config.componentList.map(component => (
-                            <div class='editor-left-item'>
+                            <div
+                                class='editor-left-item'
+                                draggable
+                                onDragstart={(e) => dragStart(e, component)}
+                                onDragend={dragEnd}>
                                 <span class='editor-left-item__label'>{component.label}</span>
                                 <div>{component.preview()}</div>
                             </div>
@@ -50,9 +76,20 @@ export default defineComponent({
                     {/* 负责产生滚动条 */}
                     <div class='editor-container__canvas'>
                         {/* 放置内容 */}
-                        <div class='editor-container__content' style={containerStyle.value}>
+                        <div class='editor-container__content'
+                            style={containerStyle.value}
+                            ref={containerRef}
+                            onMousedown={() => clearBlocksFocus()}>
                             {
-                                editorConfig.value.blocks.map(block => (<editorBlock block={block}></editorBlock>))
+                                editorConfig.value.blocks.map(block => (
+                                    <editorBlock
+                                        class={block.focus ? 'editor-block__focus' : ''}
+                                        block={block}
+                                        onMousedown={(e: MouseEvent) => blockMousedown(e, block)}
+                                    >
+
+                                    </editorBlock>
+                                ))
                             }
                         </div>
                     </div>
