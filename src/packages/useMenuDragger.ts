@@ -34,6 +34,8 @@ export function useMenuDragger(containerRef:Ref<HTMLElement | null>,data:Writabl
                     top:e.offsetY,
                     zIndex:1,
                     key:currentDragComponent!.key,
+                    width:0,
+                    height:0,
                     dragAlignCenter:true // 松手时让组件可以居中
                 }
              ]

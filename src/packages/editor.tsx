@@ -42,7 +42,8 @@ export default defineComponent({
         const {
             focusData,
             blockMousedown,
-            clearBlocksFocus
+            containerMousedoen,
+            lastSelectedBlock
         } = useFocus(editorConfig, (e) => {  // 选中后可能直接就进行拖拽了
             // 获取焦点后进行拖拽
             mouseDown(e) // 点击时的event。
@@ -50,7 +51,7 @@ export default defineComponent({
 
         // 内容区多个元素的拖拽
 
-        const { mouseDown } = useBlockDragger(focusData)
+        const { mouseDown,markLine } = useBlockDragger(focusData,lastSelectedBlock,editorConfig)
 
         return () => (
             <div class='editor'>
@@ -79,18 +80,20 @@ export default defineComponent({
                         <div class='editor-container__content'
                             style={containerStyle.value}
                             ref={containerRef}
-                            onMousedown={() => clearBlocksFocus()}>
+                            onMousedown={containerMousedoen}>
                             {
-                                editorConfig.value.blocks.map(block => (
+                                editorConfig.value.blocks.map((block,index) => (
                                     <editorBlock
                                         class={block.focus ? 'editor-block__focus' : ''}
                                         block={block}
-                                        onMousedown={(e: MouseEvent) => blockMousedown(e, block)}
+                                        onMousedown={(e: MouseEvent) => blockMousedown(e, block,index)}
                                     >
 
                                     </editorBlock>
                                 ))
                             }
+                            { markLine.x !== null && <div class="line-x" style={{top:markLine.x+'px'}}></div>}
+                            { markLine.y !== null && <div class="line-y" style={{left:markLine.y+'px'}}></div>}
                         </div>
                     </div>
                 </div>

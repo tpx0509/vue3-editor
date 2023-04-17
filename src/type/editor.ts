@@ -7,7 +7,6 @@ export type TeditorConfig = {
         height:number
      },
      blocks:TblockConfig[]
-     
 }
 
 export type TblockConfig = {
@@ -15,8 +14,11 @@ export type TblockConfig = {
      top:number,
      zIndex:number,
      key:string,
+     height: number,
+     width: number
      dragAlignCenter?:boolean,
-     focus?:boolean
+     focus?:boolean,
+     
 }
 
 export const componentConfigKey:InjectionKey<TcomponentConfig> = Symbol('config')
