@@ -9,6 +9,7 @@ import { useMenuDragger } from './useMenuDragger';
 import deepcopy from 'deepcopy';
 import { useFocus } from './useFocus';
 import { useBlockDragger } from './useBlockDragger';
+import { useCommands } from './useCommands';
 export default defineComponent({
     props: {
         modelValue: {
@@ -53,6 +54,11 @@ export default defineComponent({
 
         const { mouseDown,markLine } = useBlockDragger(focusData,lastSelectedBlock,editorConfig)
 
+        const { commands } = useCommands(editorConfig)
+        const buttons = ref([
+            { label : '撤销',handler: commands.undo },
+            { label : '重做',handler: commands.redo }
+        ])
         return () => (
             <div class='editor'>
                 <div class='editor-left'>
@@ -70,8 +76,14 @@ export default defineComponent({
                         ))
                     }
                 </div>
-                <div class='editor-top'>顶部菜单区</div>
-                <div class='editor-right'>右侧自定义区</div>
+                <div class='editor-top'>
+                    {
+                        buttons.value.map(item => {
+                            return <div class='item' onClick={item.handler}>{ item.label }</div>
+                        })
+                    }
+                </div>
+                <div class='editor-right'></div>
                 {/* 负责用padding产生内容区 */}
                 <div class='editor-container' >
                     {/* 负责产生滚动条 */}

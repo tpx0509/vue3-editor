@@ -51,6 +51,20 @@
         left: 280px;
         right: 280px;
         height: 80px;
+        display: flex;
+        
+        .item { 
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: #ccc;
+            & + .item {
+                margin-left: 5px;
+            }
+        }
     }
     &-container {
         padding: 90px 280px 0;

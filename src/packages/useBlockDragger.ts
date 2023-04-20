@@ -1,5 +1,6 @@
 import { TblockConfig, TeditorConfig } from "@/type/editor"
 import { ComputedRef, reactive, WritableComputedRef } from "vue";
+import events from "./events";
 
 export function useBlockDragger(data:ComputedRef<{
     focusBlocks: TblockConfig[];
@@ -106,6 +107,7 @@ export function useBlockDragger(data:ComputedRef<{
         }
         document.addEventListener('mousemove', mouseMove)
         document.addEventListener('mouseup', mouseUp)
+        events.emit('start') // 派发拖拽开始事件
     }
     function mouseMove(e: MouseEvent) {
         let { clientX: moveX, clientY: moveY } = e
@@ -158,6 +160,7 @@ export function useBlockDragger(data:ComputedRef<{
         document.removeEventListener('mouseup', mouseUp)
         markLine.x = null
         markLine.y = null
+        events.emit('end') // 派发拖拽结束事件
     }
     return {
         mouseDown,
