@@ -6,7 +6,7 @@
         top:0;
         bottom: 0;
         width: 270px;
-        background-color: red;
+        border: 1px solid #ccc;
     }
     &-left{
         left:0;
@@ -51,7 +51,6 @@
         left: 280px;
         right: 280px;
         height: 80px;
-        background-color: pink;
     }
     &-container {
         padding: 90px 280px 0;
@@ -63,7 +62,7 @@
         }
         &__content {
             position: relative;
-            background-color: yellowgreen;
+            border:1px solid #ccc;
         }
     }
 }

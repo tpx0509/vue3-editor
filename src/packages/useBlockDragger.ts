@@ -123,6 +123,8 @@ export function useBlockDragger(data:ComputedRef<{
             if(Math.abs(t - top) < 5) {
                 x = s // 线要显示的位置
                 // 实现快速和这个元素贴在一起
+                // startY下面计算durX的时候会减掉 (所以这里加上)
+                // startTop最终计算top赋值的时候会加上（所以这里减掉）
                 moveY = dragState.startY - dragState.startTop + t
                 break; // 找到一根线后就跳出循环
             }
@@ -134,6 +136,7 @@ export function useBlockDragger(data:ComputedRef<{
                 y = s // 线要显示的位置
 
                 // 实现快速和这个元素贴在一起
+                // 原理同上
                 moveX = dragState.startX - dragState.startLeft + l
                 break; 
             }
