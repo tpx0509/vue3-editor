@@ -1,6 +1,7 @@
 import { componentConfig } from "@/type/component"
 import { TeditorConfig } from "@/type/editor"
 import { Ref, WritableComputedRef } from "vue"
+import events from "./events"
 
 export function useMenuDragger(containerRef:Ref<HTMLElement | null>,data:WritableComputedRef<TeditorConfig>) {
     let currentDragComponent:componentConfig|null = null
@@ -41,12 +42,14 @@ export function useMenuDragger(containerRef:Ref<HTMLElement | null>,data:Writabl
              ]
         }
         currentDragComponent = null
+        events.emit('start')
     }
     function dragEnd() {
         containerRef.value?.removeEventListener('dragenter',dragEnter)
         containerRef.value?.removeEventListener('dragover',dragOver)
         containerRef.value?.removeEventListener('dragleave',dragLeave)
         containerRef.value?.removeEventListener('drop',drop)
+        events.emit('end')
     }
     return {
         dragStart,

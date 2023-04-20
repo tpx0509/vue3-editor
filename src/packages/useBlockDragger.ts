@@ -12,7 +12,8 @@ export function useBlockDragger(data:ComputedRef<{
         startPos?: Pick<TblockConfig, 'top' | 'left'>[],
         startLeft:number,
         startTop:number,
-        lines:Lines
+        lines:Lines,
+        dragging?:boolean
     } = {
         startX: 0,
         startY: 0,
@@ -22,7 +23,8 @@ export function useBlockDragger(data:ComputedRef<{
         lines:{
             x:[],
             y:[]
-        }
+        },
+        dragging : false
     }
     let markLine = reactive<{
         x:number|null,
@@ -103,15 +105,18 @@ export function useBlockDragger(data:ComputedRef<{
                 
 
                 return lines
-            })()
+            })(),
+            dragging:false
         }
         document.addEventListener('mousemove', mouseMove)
         document.addEventListener('mouseup', mouseUp)
-        events.emit('start') // 派发拖拽开始事件
     }
     function mouseMove(e: MouseEvent) {
         let { clientX: moveX, clientY: moveY } = e
-
+        if(!dragState.dragging) {
+            dragState.dragging = true
+            events.emit('start') // 派发拖拽开始事件(只要触发事件就会记住拖拽前的位置)
+        }
         // 计算当前元素最新的left，top . 去线里面，找到应该显示的线
         // 鼠标移动后 - 鼠标移动前 + left
         let left = moveX - dragState.startX + dragState.startLeft;
@@ -160,7 +165,11 @@ export function useBlockDragger(data:ComputedRef<{
         document.removeEventListener('mouseup', mouseUp)
         markLine.x = null
         markLine.y = null
-        events.emit('end') // 派发拖拽结束事件
+        if(dragState.dragging) {
+            events.emit('end') // 派发拖拽结束事件
+            dragState.dragging=false
+        }
+        
     }
     return {
         mouseDown,
