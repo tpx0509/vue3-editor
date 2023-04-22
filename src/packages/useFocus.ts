@@ -1,7 +1,7 @@
 import { TblockConfig, TeditorConfig } from "@/type/editor"
-import { computed, ref, WritableComputedRef } from "vue"
+import { computed, Ref, ref, WritableComputedRef } from "vue"
 
-export function useFocus(data:WritableComputedRef<TeditorConfig>,callback:(e:MouseEvent)=>void) {
+export function useFocus(data:WritableComputedRef<TeditorConfig>,isPreview:Ref<boolean>,callback:(e:MouseEvent)=>void) {
     let lastSelectedIndex = ref(-1); // 当前选中项
     let lastSelectedBlock = computed<TblockConfig>(() => data.value.blocks[lastSelectedIndex.value])
     const focusData = computed(() => {
@@ -14,10 +14,12 @@ export function useFocus(data:WritableComputedRef<TeditorConfig>,callback:(e:Mou
         }
    })
    function containerMousedoen() {
+        if(isPreview.value) return;
         clearBlocksFocus()
         lastSelectedIndex.value = -1
    }
    function blockMousedown(e: MouseEvent, block: TblockConfig,index:number) {
+       if(isPreview.value) return;
        e.preventDefault()
        e.stopPropagation()
        

@@ -1,14 +1,14 @@
-import { TeditorConfig } from "@/type/editor"
+import { TblockConfig, TeditorConfig } from "@/type/editor"
 import deepcopy from "deepcopy"
-import { onUnmounted, WritableComputedRef } from "vue"
+import { ComputedRef, onUnmounted, WritableComputedRef } from "vue"
 import events from "./events"
 
 type TCommands = {
     name: string,
-    keyboard ?: string,
+    keyboard?: string,
     pushQueue?: boolean, // 该命令是否需要加入队列
     init?: () => () => void,
-    execute: (...args:any) => { redo: () => unknown, [key: string]: () => unknown },
+    execute: (...args: any) => { redo: () => unknown, [key: string]: () => unknown },
     [key: string]: any
 }
 type TFn = () => unknown
@@ -22,13 +22,16 @@ type TCommandsState = {
     current: number, // 当前在任务队列的指针
     queue: Task[], // 任务队列 用于撤销，重做等
     commands: { // 存放指令的映射 undo: () => {}
-        [key: string]: (...args:any) => void
+        [key: string]: (...args: any) => void
     },
     commandsArray: TCommands[], // 存放所有操作指令
     destroyArray: TFn[] // 需要执行的销毁函数集
 }
 
-export function useCommands(data: WritableComputedRef<TeditorConfig>) {
+export function useCommands(data: WritableComputedRef<TeditorConfig>, focusData: ComputedRef<{
+    focusBlocks: TblockConfig[];
+    unFocusBlocks: TblockConfig[];
+}>) {
     console.log('data', data.value)
     const state: TCommandsState = {
         current: -1,
@@ -131,13 +134,13 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>) {
             }
         }
     })
-    register({
-        name:'updateContainer',
-        pushQueue:true,
+    register({ // 更新整个容器
+        name: 'updateContainer',
+        pushQueue: true,
         execute(newValue) {
             let state = {
-                before:data.value, // 当前的值
-                after:newValue //新值
+                before: data.value, // 当前的值
+                after: newValue //新值
             }
             return {
                 redo() {
@@ -149,44 +152,139 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>) {
             }
         }
     })
-    const keyboardEvent = (() => {
-        const KeyCodes:any = {
-            90:'z',
-            89:'y'
+    register({ // 置顶
+        name: 'placeTop',
+        pushQueue: true,
+        execute() {
+            let { focusBlocks, unFocusBlocks } = focusData.value
+            let before = deepcopy(data.value.blocks) // 保存一份之前的
+            let after = (() => {
+                // 找到未选中block中的最大zIndex
+                let maxZIndex = unFocusBlocks.reduce((prev, block) => {
+                    return Math.max(prev, block.zIndex)
+                }, -Infinity)
+                // 把选中的block统一在最大的zIndex基础上+1就实现了置顶
+                focusBlocks.forEach(block => block.zIndex = maxZIndex + 1)
+                return data.value.blocks
+            })()
+
+            return {
+                redo() {
+                    data.value = {
+                         ...data.value,
+                         blocks : after
+                    }
+                },
+                undo() {
+                    data.value = {
+                        ...data.value,
+                        blocks : before
+                    }
+                }
+            }
         }
-        const onKeydown = (e:KeyboardEvent) => {
-            let { ctrlKey,keyCode } = e
+    })
+    register({ // 置底
+        name: 'placeBottom',
+        pushQueue: true,
+        execute() {
+            let { focusBlocks, unFocusBlocks } = focusData.value
+            let before = deepcopy(data.value.blocks) // 保存一份之前的(要深拷贝一份，因为在undo里面直接使用的话，他们是同一份引用，并不会触发试图更新)
+            let after = (() => {
+                // 找到未选中block中的最小zIndex
+                let minZIndex = unFocusBlocks.reduce((prev, block) => {
+                    return Math.min(prev, block.zIndex)
+                }, Infinity) - 1;
+
+                if(minZIndex < 0) {
+                     // 特殊情况，minZindex已经为负值了。为了避免不展示。zIndex不能出现负值
+                     // 所以让它为0，其他的元素++展示在其上面即可
+                     minZIndex = 0
+                     let durIndex = Math.abs(minZIndex)
+                     unFocusBlocks.forEach(block => block.zIndex+=durIndex)
+                }
+                focusBlocks.forEach(block => block.zIndex = minZIndex)
+                return data.value.blocks
+            })()
+
+            return {
+                redo() {
+                    data.value = {
+                         ...data.value,
+                         blocks : after
+                    }
+                },
+                undo() {
+                    data.value = {
+                        ...data.value,
+                        blocks : before
+                    }
+                }
+            }
+        }
+    })
+    register({ // 删除
+        name: 'delete',
+        pushQueue:true,
+        execute() {
+            let state = {
+                before: deepcopy(data.value.blocks),
+                after : focusData.value.unFocusBlocks // 让blocks变为只包含unFocusBlocks就实现了删除
+            }
+            return {
+                redo() {
+                    data.value = {
+                        ...data.value,
+                        blocks : state.after
+                    }
+                },
+                undo() {
+                    data.value = {
+                        ...data.value,
+                        blocks : state.before
+                    }
+                }
+            }
+        }
+    })
+    const keyboardEvent = (() => {
+        const KeyCodes: any = {
+            90: 'z',
+            89: 'y'
+        }
+        const onKeydown = (e: KeyboardEvent) => {
+            let { ctrlKey, keyCode } = e
 
             let keyArr = []
             let keyString = ''
-            if(ctrlKey) {
-                 // 按下了ctrl
-                 keyArr.push('ctrl');
-                 keyArr.push(KeyCodes[keyCode])
-                 keyString = keyArr.join('+')
+            if (ctrlKey) {
+                // 按下了ctrl
+                keyArr.push('ctrl');
+                keyArr.push(KeyCodes[keyCode])
+                keyString = keyArr.join('+')
             }
-            state.commandsArray.forEach(({ keyboard,name }) => {
-                 if(keyboard === keyString) {
+            state.commandsArray.forEach(({ keyboard, name }) => {
+                if (keyboard === keyString) {
                     state.commands[name]()
                     e.preventDefault()
-                 }
+                }
             })
         }
         const init = () => { // 初始化事件
-            window.addEventListener('keydown',onKeydown)
+            window.addEventListener('keydown', onKeydown)
             return () => {
-                window.removeEventListener('keydown',onKeydown)
+                window.removeEventListener('keydown', onKeydown)
             }
         }
         return init
     })()
-    ;(() => {
-        // 监听键盘事件
-        state.destroyArray.push(keyboardEvent())
-        state.commandsArray.forEach(commands => {
-            commands.init && state.destroyArray.push(commands.init())
-        })
-    })()
+        ; (() => {
+            // 监听键盘事件
+            state.destroyArray.push(keyboardEvent())
+            state.commandsArray.forEach(commands => {
+                commands.init && state.destroyArray.push(commands.init())
+            })
+        })()
     onUnmounted(() => {
         state.destroyArray.forEach(fn => fn())
     })

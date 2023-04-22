@@ -2,10 +2,20 @@ import { TblockConfig, TeditorConfig } from "@/type/editor"
 import { ComputedRef, reactive, WritableComputedRef } from "vue";
 import events from "./events";
 
-export function useBlockDragger(data:ComputedRef<{
-    focusBlocks: TblockConfig[];
-    unFocusBlocks: TblockConfig[];
-}>,lastSelectedBlock:ComputedRef<TblockConfig>,editorConfig:WritableComputedRef<TeditorConfig>) {
+export function useBlockDragger(
+{
+    data,
+    lastSelectedBlock,
+    editorConfig
+}:{
+    data:ComputedRef<{
+        focusBlocks: TblockConfig[];
+        unFocusBlocks: TblockConfig[];
+    }>,
+    lastSelectedBlock:ComputedRef<TblockConfig>,
+    editorConfig:WritableComputedRef<TeditorConfig>
+}
+) {
     let dragState: {
         startX: number,
         startY: number,

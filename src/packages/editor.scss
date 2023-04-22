@@ -52,10 +52,11 @@
         right: 280px;
         height: 80px;
         display: flex;
-        
+        align-items: flex-end;
+        justify-content: center;
         .item { 
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -94,6 +95,11 @@
     &__focus {
         &::after {
             border:2px dashed red;
+        }
+    }
+    &__preview {
+        &::after {
+            display: none;
         }
     }
 }

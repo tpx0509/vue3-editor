@@ -24,6 +24,8 @@ export default defineComponent({
     emits: ['update:modelValue'],
     setup(props, { emit }) {
         provide(componentConfigKey, config)
+
+        const previewRef = ref(false) // 是否处于预览状态
         const editorConfig = computed<TeditorConfig>({
             get(): TeditorConfig {
                 return props.modelValue
@@ -43,45 +45,53 @@ export default defineComponent({
         // 内容区点击获取焦点
         const {
             focusData,
+            lastSelectedBlock,
             blockMousedown,
             containerMousedoen,
-            lastSelectedBlock
-        } = useFocus(editorConfig, (e) => {  // 选中后可能直接就进行拖拽了
+            clearBlocksFocus
+        } = useFocus(editorConfig,previewRef, (e) => {  // 选中后可能直接就进行拖拽了
             // 获取焦点后进行拖拽
             mouseDown(e) // 点击时的event。
         })
 
         // 内容区多个元素的拖拽
 
-        const { mouseDown, markLine } = useBlockDragger(focusData, lastSelectedBlock, editorConfig)
+        const { mouseDown, markLine } = useBlockDragger({ data: focusData, lastSelectedBlock, editorConfig})
 
-        const { commands } = useCommands(editorConfig)
+        const { commands } = useCommands(editorConfig, focusData)
         const buttons = ref([
             { label: '撤销', handler: commands.undo },
             { label: '重做', handler: commands.redo },
             {
-                label: '导出', 
+                label: '导出',
                 handler: () => {
                     $dialog({
-                        title:'导出json',
+                        title: '导出json',
                         content: JSON.stringify(editorConfig.value)
                     })
                 }
             },
             {
-                label: '导入', 
+                label: '导入',
                 handler: () => {
                     $dialog({
-                        title:'导入json',
-                        content:'',
-                        footer:true,
+                        title: '导入json',
+                        content: '',
+                        footer: true,
                         onConfirm(strData) {
                             // editorConfig.value = JSON.parse(strData) // 这样直接操作无法入队列,将来不能撤销重做
                             commands.updateContainer(JSON.parse(strData))
                         }
                     })
                 }
-            }
+            },
+            { label: '置顶', handler: commands.placeTop },
+            { label: '置底', handler: commands.placeBottom },
+            { label: '删除', handler: commands.delete },
+            { label: () => previewRef.value ? '编辑' : '预览', handler: () => {
+                previewRef.value = !previewRef.value
+                clearBlocksFocus()
+            }}
         ])
         return () => (
             <div class='editor'>
@@ -103,7 +113,8 @@ export default defineComponent({
                 <div class='editor-top'>
                     {
                         buttons.value.map(item => {
-                            return <div class='item' onClick={item.handler}>{item.label}</div>
+                            const label = typeof item.label === 'function' ? item.label() : item.label;
+                            return <div class='item' onClick={item.handler}>{label}</div>
                         })
                     }
                 </div>
@@ -120,7 +131,10 @@ export default defineComponent({
                             {
                                 editorConfig.value.blocks.map((block, index) => (
                                     <editorBlock
-                                        class={block.focus ? 'editor-block__focus' : ''}
+                                        class={
+                                            [block.focus && 'editor-block__focus',
+                                            previewRef.value && 'editor-block__preview']
+                                        }
                                         block={block}
                                         onMousedown={(e: MouseEvent) => blockMousedown(e, block, index)}
                                     >
