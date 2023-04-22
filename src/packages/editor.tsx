@@ -10,6 +10,7 @@ import deepcopy from 'deepcopy';
 import { useFocus } from './useFocus';
 import { useBlockDragger } from './useBlockDragger';
 import { useCommands } from './useCommands';
+import { $dialog } from '@/components/Dialog';
 export default defineComponent({
     props: {
         modelValue: {
@@ -52,12 +53,35 @@ export default defineComponent({
 
         // 内容区多个元素的拖拽
 
-        const { mouseDown,markLine } = useBlockDragger(focusData,lastSelectedBlock,editorConfig)
+        const { mouseDown, markLine } = useBlockDragger(focusData, lastSelectedBlock, editorConfig)
 
         const { commands } = useCommands(editorConfig)
         const buttons = ref([
-            { label : '撤销',handler: commands.undo },
-            { label : '重做',handler: commands.redo }
+            { label: '撤销', handler: commands.undo },
+            { label: '重做', handler: commands.redo },
+            {
+                label: '导出', 
+                handler: () => {
+                    $dialog({
+                        title:'导出json',
+                        content: JSON.stringify(editorConfig.value)
+                    })
+                }
+            },
+            {
+                label: '导入', 
+                handler: () => {
+                    $dialog({
+                        title:'导入json',
+                        content:'',
+                        footer:true,
+                        onConfirm(strData) {
+                            // editorConfig.value = JSON.parse(strData) // 这样直接操作无法入队列,将来不能撤销重做
+                            commands.updateContainer(JSON.parse(strData))
+                        }
+                    })
+                }
+            }
         ])
         return () => (
             <div class='editor'>
@@ -79,7 +103,7 @@ export default defineComponent({
                 <div class='editor-top'>
                     {
                         buttons.value.map(item => {
-                            return <div class='item' onClick={item.handler}>{ item.label }</div>
+                            return <div class='item' onClick={item.handler}>{item.label}</div>
                         })
                     }
                 </div>
@@ -94,18 +118,18 @@ export default defineComponent({
                             ref={containerRef}
                             onMousedown={containerMousedoen}>
                             {
-                                editorConfig.value.blocks.map((block,index) => (
+                                editorConfig.value.blocks.map((block, index) => (
                                     <editorBlock
                                         class={block.focus ? 'editor-block__focus' : ''}
                                         block={block}
-                                        onMousedown={(e: MouseEvent) => blockMousedown(e, block,index)}
+                                        onMousedown={(e: MouseEvent) => blockMousedown(e, block, index)}
                                     >
 
                                     </editorBlock>
                                 ))
                             }
-                            { markLine.x !== null && <div class="line-x" style={{top:markLine.x+'px'}}></div>}
-                            { markLine.y !== null && <div class="line-y" style={{left:markLine.y+'px'}}></div>}
+                            {markLine.x !== null && <div class="line-x" style={{ top: markLine.x + 'px' }}></div>}
+                            {markLine.y !== null && <div class="line-y" style={{ left: markLine.y + 'px' }}></div>}
                         </div>
                     </div>
                 </div>

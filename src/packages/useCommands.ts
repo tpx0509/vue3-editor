@@ -8,7 +8,7 @@ type TCommands = {
     keyboard ?: string,
     pushQueue?: boolean, // 该命令是否需要加入队列
     init?: () => () => void,
-    execute: () => { redo: () => unknown, [key: string]: () => unknown },
+    execute: (...args:any) => { redo: () => unknown, [key: string]: () => unknown },
     [key: string]: any
 }
 type TFn = () => unknown
@@ -22,7 +22,7 @@ type TCommandsState = {
     current: number, // 当前在任务队列的指针
     queue: Task[], // 任务队列 用于撤销，重做等
     commands: { // 存放指令的映射 undo: () => {}
-        [key: string]: () => void
+        [key: string]: (...args:any) => void
     },
     commandsArray: TCommands[], // 存放所有操作指令
     destroyArray: TFn[] // 需要执行的销毁函数集
@@ -37,10 +37,11 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>) {
         commandsArray: [],
         destroyArray: []
     }
+    // 注册命令
     const register = (commands: TCommands) => {
         state.commandsArray.push(commands)
-        state.commands[commands.name] = () => {
-            const { redo, undo } = commands.execute()
+        state.commands[commands.name] = (...args) => {
+            const { redo, undo } = commands.execute(...args)
             redo()
             if (!commands.pushQueue) return
             let { queue, current } = state
@@ -90,7 +91,7 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>) {
             }
         }
     })
-    register({
+    register({ // 每次拖拽时会执行
         name: 'drag',
         pushQueue: true,
         init() { // 一开始就要执行的函数
@@ -100,7 +101,7 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>) {
             */
             this.before = null
             const start = () => this.before = deepcopy(data.value.blocks) // 保存拖拽之前的状态
-            const end = () => state.commands.drag() // 拖拽结束后调用drag会保存本次拖拽任务到队列中
+            const end = () => state.commands.drag() // 每次拖拽结束后调用drag会保存本次拖拽任务到队列中
             events.on('start', start)
             events.on('end', end)
             return () => { // 销毁函数
@@ -130,7 +131,24 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>) {
             }
         }
     })
-
+    register({
+        name:'updateContainer',
+        pushQueue:true,
+        execute(newValue) {
+            let state = {
+                before:data.value, // 当前的值
+                after:newValue //新值
+            }
+            return {
+                redo() {
+                    data.value = state.after
+                },
+                undo() {
+                    data.value = state.before
+                }
+            }
+        }
+    })
     const keyboardEvent = (() => {
         const KeyCodes:any = {
             90:'z',
