@@ -11,6 +11,8 @@ import { useFocus } from './useFocus';
 import { useBlockDragger } from './useBlockDragger';
 import { useCommands } from './useCommands';
 import { $dialog } from '@/components/Dialog';
+import { ElButton } from 'element-plus';
+import { $dropDown, DropdownItem } from '@/components/Dropdown';
 export default defineComponent({
     props: {
         modelValue: {
@@ -26,6 +28,7 @@ export default defineComponent({
         provide(componentConfigKey, config)
 
         const previewRef = ref(false) // 是否处于预览状态
+        const isCloseRef = ref(false) // 关闭编辑等
         const editorConfig = computed<TeditorConfig>({
             get(): TeditorConfig {
                 return props.modelValue
@@ -49,14 +52,14 @@ export default defineComponent({
             blockMousedown,
             containerMousedoen,
             clearBlocksFocus
-        } = useFocus(editorConfig,previewRef, (e) => {  // 选中后可能直接就进行拖拽了
+        } = useFocus(editorConfig, previewRef, (e) => {  // 选中后可能直接就进行拖拽了
             // 获取焦点后进行拖拽
             mouseDown(e) // 点击时的event。
         })
 
         // 内容区多个元素的拖拽
 
-        const { mouseDown, markLine } = useBlockDragger({ data: focusData, lastSelectedBlock, editorConfig})
+        const { mouseDown, markLine } = useBlockDragger({ data: focusData, lastSelectedBlock, editorConfig })
 
         const { commands } = useCommands(editorConfig, focusData)
         const buttons = ref([
@@ -88,65 +91,119 @@ export default defineComponent({
             { label: '置顶', handler: commands.placeTop },
             { label: '置底', handler: commands.placeBottom },
             { label: '删除', handler: commands.delete },
-            { label: () => previewRef.value ? '编辑' : '预览', handler: () => {
-                previewRef.value = !previewRef.value
-                clearBlocksFocus()
-            }}
+            {
+                label: () => previewRef.value ? '编辑' : '预览', handler: () => {
+                    previewRef.value = !previewRef.value
+                    clearBlocksFocus()
+                }
+            },
+            { label: '关闭', handler: () => isCloseRef.value = true }
         ])
+
+        const onContextmenu = (e:any,block:TblockConfig) => {
+            e.preventDefault()
+            $dropDown({
+                el:e.target,
+                content() {
+                    return <>
+                        <DropdownItem label='删除' onClick={() => commands.delete()}></DropdownItem>
+                        <DropdownItem label='置顶' onClick={() => commands.placeTop()}></DropdownItem>
+                        <DropdownItem label='置底' onClick={() => commands.placeBottom()}></DropdownItem>
+                        <DropdownItem label='查看' onClick={() => {
+                            $dialog({
+                                title:'查看节点数据',
+                                content: JSON.stringify(block)
+                            })
+                        }}></DropdownItem>
+                        <DropdownItem label='导入' onClick={() => {
+                            $dialog({
+                                title:'导入节点数据',
+                                content: '',
+                                footer:true,
+                                onConfirm(text) {
+                                    text = JSON.parse(text)
+                                    commands.updateBlock(text,block)
+                                }
+                            })
+                        }}></DropdownItem>
+                    </>
+                }
+            })
+            console.log(block)
+        }
         return () => (
             <div class='editor'>
-                <div class='editor-left'>
-                    {/* 物料区，这里要渲染所有注册的组件列表 */}
-                    {
-                        config.componentList.map(component => (
-                            <div
-                                class='editor-left-item'
-                                draggable
-                                onDragstart={(e) => dragStart(e, component)}
-                                onDragend={dragEnd}>
-                                <span class='editor-left-item__label'>{component.label}</span>
-                                <div>{component.preview()}</div>
-                            </div>
-                        ))
-                    }
-                </div>
-                <div class='editor-top'>
-                    {
-                        buttons.value.map(item => {
-                            const label = typeof item.label === 'function' ? item.label() : item.label;
-                            return <div class='item' onClick={item.handler}>{label}</div>
-                        })
-                    }
-                </div>
-                <div class='editor-right'></div>
-                {/* 负责用padding产生内容区 */}
-                <div class='editor-container' >
-                    {/* 负责产生滚动条 */}
-                    <div class='editor-container__canvas'>
-                        {/* 放置内容 */}
-                        <div class='editor-container__content'
-                            style={containerStyle.value}
-                            ref={containerRef}
-                            onMousedown={containerMousedoen}>
+                {
+                    isCloseRef.value ?
+                        <>
                             {
-                                editorConfig.value.blocks.map((block, index) => (
+                                editorConfig.value.blocks.map(block => (
                                     <editorBlock
-                                        class={
-                                            [block.focus && 'editor-block__focus',
-                                            previewRef.value && 'editor-block__preview']
-                                        }
+                                        class='editor-block__preview'
                                         block={block}
-                                        onMousedown={(e: MouseEvent) => blockMousedown(e, block, index)}
                                     >
-
                                     </editorBlock>
                                 ))
                             }
-                            {markLine.x !== null && <div class="line-x" style={{ top: markLine.x + 'px' }}></div>}
-                            {markLine.y !== null && <div class="line-y" style={{ left: markLine.y + 'px' }}></div>}
-                        </div>
-                    </div>
-                </div>
+                            <ElButton type='primary' onClick={() => isCloseRef.value = false}>返回编辑</ElButton>
+                        </> :
+                        <>
+                            <div class='editor-left'>
+                                {/* 物料区，这里要渲染所有注册的组件列表 */}
+                                {
+                                    config.componentList.map(component => (
+                                        <div
+                                            class='editor-left-item'
+                                            draggable
+                                            onDragstart={(e) => dragStart(e, component)}
+                                            onDragend={dragEnd}>
+                                            <span class='editor-left-item__label'>{component.label}</span>
+                                            <div>{component.preview()}</div>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                            <div class='editor-top'>
+                                {
+                                    buttons.value.map(item => {
+                                        const label = typeof item.label === 'function' ? item.label() : item.label;
+                                        return <div class='item' onClick={item.handler}>{label}</div>
+                                    })
+                                }
+                            </div>
+                            <div class='editor-right'></div>
+                            {/* 负责用padding产生内容区 */}
+                            <div class='editor-container' >
+                                {/* 负责产生滚动条 */}
+                                <div class='editor-container__canvas'>
+                                    {/* 放置内容 */}
+                                    <div class='editor-container__content'
+                                        style={containerStyle.value}
+                                        ref={containerRef}
+                                        onMousedown={containerMousedoen}>
+                                        {
+                                            editorConfig.value.blocks.map((block, index) => (
+                                                <editorBlock
+                                                    class={
+                                                        [block.focus && 'editor-block__focus',
+                                                        previewRef.value && 'editor-block__preview']
+                                                    }
+                                                    block={block}
+                                                    onMousedown={(e: MouseEvent) => blockMousedown(e, block, index)}
+                                                    onContextmenu = { (e:Event) => onContextmenu(e,block)}
+                                                >
+
+                                                </editorBlock>
+                                            ))
+                                        }
+                                        {markLine.x !== null && <div class="line-x" style={{ top: markLine.x + 'px' }}></div>}
+                                        {markLine.y !== null && <div class="line-y" style={{ left: markLine.y + 'px' }}></div>}
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                }
+
             </div>
         )
     }

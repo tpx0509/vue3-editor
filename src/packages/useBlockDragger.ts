@@ -57,7 +57,6 @@ export function useBlockDragger(
     }
     function mouseDown(e: MouseEvent) {
         // 记录点击时的位置
-        console.log(lastSelectedBlock.value)
         let { height: Bheight,width:Bwidth  } = lastSelectedBlock.value
 
         dragState = {

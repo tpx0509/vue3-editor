@@ -152,6 +152,31 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>, focusData:
             }
         }
     })
+    register({ // 更新某个block
+        name: 'updateBlock',
+        pushQueue: true,
+        execute(newBlock,oldBlock) {
+            let state = {
+                before: data.value.blocks, // 之前的值
+                after: (() => { 
+                    let blocks = [...data.value.blocks] // 要新生成一个引用空间去修改，不能直接修改data.value.blocks（所有的指令都要避免直接修改data.value.blocks，不然无法撤销回退）
+                    let index = blocks.indexOf(oldBlock) // 找到老的在哪
+                    if(index > -1) {
+                        blocks.splice(index,1,newBlock) // 换成新的
+                    }
+                    return blocks
+                })() //新值
+            }
+            return {
+                redo() {
+                    data.value = { ...data.value,blocks:state.after }
+                },
+                undo() {
+                    data.value = { ...data.value,blocks:state.before }
+                }
+            }
+        }
+    })
     register({ // 置顶
         name: 'placeTop',
         pushQueue: true,
