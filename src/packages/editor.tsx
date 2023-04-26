@@ -13,6 +13,7 @@ import { useCommands } from './useCommands';
 import { $dialog } from '@/components/Dialog';
 import { ElButton } from 'element-plus';
 import { $dropDown, DropdownItem } from '@/components/Dropdown';
+import EditorOperate from './editor-operate';
 export default defineComponent({
     props: {
         modelValue: {
@@ -171,7 +172,9 @@ export default defineComponent({
                                     })
                                 }
                             </div>
-                            <div class='editor-right'></div>
+                            <div class='editor-right'>
+                                <EditorOperate block={lastSelectedBlock.value} data={editorConfig.value}></EditorOperate>
+                            </div>
                             {/* 负责用padding产生内容区 */}
                             <div class='editor-container' >
                                 {/* 负责产生滚动条 */}
