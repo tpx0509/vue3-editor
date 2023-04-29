@@ -138,3 +138,17 @@
     cursor: pointer;
     user-select: none;
 }
+
+.range-component {
+    display:inline-flex;
+    min-height: 30px;
+    align-items: center;
+    width: 220px;
+    input {
+        flex: 1;
+        width: 100%;
+    }
+    span {
+        margin: 0 4px;
+    }
+}

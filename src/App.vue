@@ -12,7 +12,9 @@ let state = ref<TeditorConfig>(data);
 
 const formData = ref({
   username : 'tpx',
-  password : '123'
+  password : '123',
+  start:0,
+  end:100
 })
 
 </script>

@@ -35,9 +35,10 @@ export default defineComponent({
         return () => {
             // 通过block的key获取对应的组件
             const component = config?.componentMap[props.block.key]
+            console.log('组件',props.block)
             const renderComponent = component?.render({
                 props : props.block.props,
-                model : Object.keys(props.block.model||{}).reduce((result:any,modelName) => {
+                model : Object.keys(props.block.model || {}).reduce((result:any,modelName) => {
                     let field = props.block.model[modelName]
                     result[modelName] = {
                         modelValue : props.formData[field],

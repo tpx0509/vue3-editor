@@ -8,7 +8,7 @@ export type componentConfig = {
       model:any
     }) => JSX.Element,
     key: string,
-    props: {
+    props ?: {
         [key: string]: {
             type: string,
             [key:string]: any

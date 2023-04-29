@@ -1,3 +1,4 @@
+import Range from "@/components/Range";
 import { componentConfig } from "@/type/component"
 
 import { ElInput,ElButton } from 'element-plus';
@@ -71,6 +72,24 @@ registerConfig.register({
     props: {},
     model: {
         default :'绑定字段',
+    }
+})
+registerConfig.register({
+    label:'范围选择器',
+    preview : () => <Range></Range>,
+    render : ({model}) => {
+        console.log('model',model)
+       return <Range {...{
+         start : model.start?.modelValue,
+         end : model.end?.modelValue,
+         'onUpdate:start' : model.start?.['onUpdate:modelValue'],
+         'onUpdate:end' : model.end?.['onUpdate:modelValue']
+       }}></Range> 
+    },
+    key : 'range',
+    model: {
+        start :'开始范围字段',
+        end:'结束范围字段'
     }
 })
 
