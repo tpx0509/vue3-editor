@@ -19,6 +19,9 @@ export default defineComponent({
         modelValue: {
             type: Object as PropType<TeditorConfig>,
             required: true
+        },
+        formData : {
+            type : Object
         }
     },
     components: {
@@ -142,10 +145,13 @@ export default defineComponent({
                                     <editorBlock
                                         class='editor-block__preview'
                                         block={block}
+                                        formData={props.formData}
                                     >
                                     </editorBlock>
                                 ))
                             }
+                            看下绑定数据
+                            { JSON.stringify(props.formData) }
                             <ElButton type='primary' onClick={() => isCloseRef.value = false}>返回编辑</ElButton>
                         </> :
                         <>
@@ -197,6 +203,7 @@ export default defineComponent({
                                                         previewRef.value && 'editor-block__preview']
                                                     }
                                                     block={block}
+                                                    formData={props.formData}
                                                     onMousedown={(e: MouseEvent) => blockMousedown(e, block, index)}
                                                     onContextmenu = { (e:Event) => onContextmenu(e,block)}
                                                 >

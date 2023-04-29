@@ -5,6 +5,10 @@ export default defineComponent({
         block: {
             type: Object as PropType<TblockConfig>,
             required: true
+        },
+        formData: {
+            type: Object,
+            required:true
         }
     },
     setup(props) {
@@ -31,7 +35,17 @@ export default defineComponent({
         return () => {
             // 通过block的key获取对应的组件
             const component = config?.componentMap[props.block.key]
-            const renderComponent = component?.render(props.block.props) // 把每个组件自身的props传入（注意这里不是component的props，这是公共的配置），在render里便可以使用props
+            const renderComponent = component?.render({
+                props : props.block.props,
+                model : Object.keys(props.block.model||{}).reduce((result:any,modelName) => {
+                    let field = props.block.model[modelName]
+                    result[modelName] = {
+                        modelValue : props.formData[field],
+                        'onUpdate:modelValue' : (value:any) => props.formData[field] =  value
+                    }
+                    return result
+                },{})
+            }) // 把每个组件自身的props传入（注意这里不是component的props，这是公共的配置），在render里便可以使用props
             return <div
                 class='editor-block'
                 style={blockStyles.value}

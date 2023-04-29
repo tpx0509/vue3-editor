@@ -1,5 +1,5 @@
 <template>
-  <editor v-model="state"></editor>
+  <editor v-model="state" :formData="formData"></editor>
 </template>
 
 <script lang="ts" setup>
@@ -9,6 +9,11 @@ import { ref } from "vue";
 import { TeditorConfig } from './type/editor';
 
 let state = ref<TeditorConfig>(data);
+
+const formData = ref({
+  username : 'tpx',
+  password : '123'
+})
 
 </script>
 

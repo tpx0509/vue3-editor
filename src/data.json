@@ -30,7 +30,8 @@
             "left": 300,
             "top": 300,
             "zIndex": 1,
-            "key": "input"
+            "key": "input",
+            "model" : {}
         }
     ]
 }

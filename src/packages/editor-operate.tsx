@@ -75,6 +75,14 @@ export default defineComponent({
                         </ElFormItem>
                     }))
                 }
+                if(component && component.model) {
+                    
+                    content.push(Object.entries(component.model).map(([modelName,label]) => {
+                        return <ElFormItem label={label}>
+                            <ElInput v-model={state.editData.model[modelName]}></ElInput>
+                        </ElFormItem>
+                    }))
+                }
 
             }
             return <ElForm labelPosition="top" style={{ padding: '50px' }}>

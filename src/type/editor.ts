@@ -24,6 +24,10 @@ export type TblockConfig = {
           color?:string,
           type?:string,
           [key:string]:any,
+     },
+     model:{
+          default?: string,
+          [key:string]: any
      }
 }
 
