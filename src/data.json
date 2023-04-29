@@ -1,6 +1,6 @@
 {
     "container": {
-        "width": 950,
+        "width": 800,
         "height": 800
     },
     "blocks": [
@@ -8,13 +8,23 @@
             "left": 100,
             "top": 100,
             "zIndex": 1,
-            "key": "text"
+            "key": "text",
+            "props":{
+                "text":"嘿嘿嘿嘿",
+                "color":"#002FFF",
+                "size": "20px"
+            }
         },
         {
             "left": 200,
             "top": 200,
             "zIndex": 1,
-            "key": "button"
+            "key": "button",
+            "props":{
+                "text":"默认按钮",
+                "type":"success",
+                "size": "small"
+            }
         },
         {
             "left": 300,

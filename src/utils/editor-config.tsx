@@ -25,7 +25,10 @@ const createSelectProp = (label:string,options:{label:string,value:string|number
 registerConfig.register({
     label:'文本',
     preview : () => (<span>这是一个预览文本</span>),
-    render : () => (<span>这是一个渲染文本</span>),
+    render : (props) => (<span style={{
+        fontSize : props.size,
+        color : props.color
+    } as any}>{props.text||'渲染文本'}</span>),
     key : 'text',
     props:{
         text: createInputProp('文本内容'),
@@ -41,7 +44,7 @@ registerConfig.register({
 registerConfig.register({
     label:'按钮',
     preview : () => (<ElButton>预览按钮</ElButton>),
-    render : () => (<ElButton>渲染按钮</ElButton>),
+    render : (props) => (<ElButton type={props.type as any} size={props.size as any}>{props.text||'渲染按钮'}</ElButton>),
     key : 'button',
     props: {
         text: createInputProp('按钮内容'),
@@ -54,9 +57,9 @@ registerConfig.register({
         ]),
         size : createSelectProp('按钮尺寸',[
             {label:'默认',value:''},
-            {label:'中等',value:'medium'},
-            {label:'小的',value:'small'},
-            {label:'极小',value:'mini'}
+            {label:'中等',value:'default'},
+            {label:'小的',value:'large'},
+            {label:'极小',value:'small'}
         ])
     }
 })

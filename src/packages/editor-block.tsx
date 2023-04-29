@@ -31,7 +31,7 @@ export default defineComponent({
         return () => {
             // 通过block的key获取对应的组件
             const component = config?.componentMap[props.block.key]
-            const renderComponent = component?.render()
+            const renderComponent = component?.render(props.block.props) // 把每个组件自身的props传入（注意这里不是component的props，这是公共的配置），在render里便可以使用props
             return <div
                 class='editor-block'
                 style={blockStyles.value}

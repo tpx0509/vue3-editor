@@ -173,7 +173,12 @@ export default defineComponent({
                                 }
                             </div>
                             <div class='editor-right'>
-                                <EditorOperate block={lastSelectedBlock.value} data={editorConfig.value}></EditorOperate>
+                                {/* 右侧操作栏 */}
+                                <EditorOperate 
+                                block={lastSelectedBlock.value} 
+                                data={editorConfig.value}
+                                updateContainer={commands.updateContainer}
+                                updateBlock={commands.updateBlock}></EditorOperate>
                             </div>
                             {/* 负责用padding产生内容区 */}
                             <div class='editor-container' >

@@ -18,7 +18,13 @@ export type TblockConfig = {
      width: number
      dragAlignCenter?:boolean,
      focus?:boolean,
-     
+     props: {
+          text?:string,
+          size?:string,
+          color?:string,
+          type?:string,
+          [key:string]:any,
+     }
 }
 
 export const componentConfigKey:InjectionKey<TcomponentConfig> = Symbol('config')
