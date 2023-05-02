@@ -1,7 +1,7 @@
 import Range from "@/components/Range";
 import { componentConfig } from "@/type/component"
 
-import { ElInput,ElButton } from 'element-plus';
+import { ElInput,ElButton, ElSelect,ElOption } from 'element-plus';
 
 function createEditorConfig() {
      let componentList:componentConfig[] = []
@@ -23,6 +23,7 @@ let registerConfig = createEditorConfig()
 const createInputProp = (label:string) => ({ type : 'input', label})
 const createColorProp = (label:string) => ({ type : 'color', label})
 const createSelectProp = (label:string,options:{label:string,value:string|number}[]) => ({ type : 'select', label,options})
+const createTableProp = (label:string,options:any) => ({ type: 'table',label,options})
 registerConfig.register({
     label:'文本',
     preview : () => (<span>这是一个预览文本</span>),
@@ -67,7 +68,7 @@ registerConfig.register({
 registerConfig.register({
     label:'输入框',
     preview : () => (<ElInput placeholder="这是一个预览输入框"></ElInput>),
-    render : ({model}) => (console.log('model',model),<ElInput placeholder="这是一个渲染输入框" {...model.default}></ElInput>),
+    render : ({model}) => (<ElInput placeholder="这是一个渲染输入框" {...model.default}></ElInput>),
     key : 'input',
     props: {},
     model: {
@@ -78,7 +79,6 @@ registerConfig.register({
     label:'范围选择器',
     preview : () => <Range></Range>,
     render : ({model}) => {
-        console.log('model',model)
        return <Range {...{
          start : model.start?.modelValue,
          end : model.end?.modelValue,
@@ -90,6 +90,33 @@ registerConfig.register({
     model: {
         start :'开始范围字段',
         end:'结束范围字段'
+    }
+})
+registerConfig.register({
+    label:'下拉选择器',
+    preview : () => <ElSelect modelValue='请选择'></ElSelect>,
+    render : ({props,model}) =>{
+        console.log('props',props)
+        console.log('model',model)
+        return <ElSelect {...model.default}>
+            { props.table && props.table.map((item:any,index:number) => {
+                return <ElOption value={item.value}>{item.label}</ElOption> 
+            })}
+        </ElSelect>
+           
+    } ,
+    key : 'select',
+    props:{
+        table : createTableProp('下拉选项',{
+            options : [
+                { label : '显示值', field : 'label' },
+                { label : '绑定值', field : 'value' }
+            ],
+            key : 'label' // 显示给用户的值 是label值
+        })
+    },
+    model:{
+        default:'应用字段'
     }
 })
 

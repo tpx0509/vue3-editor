@@ -133,7 +133,6 @@ export default defineComponent({
                     </>
                 }
             })
-            console.log(block)
         }
         return () => (
             <div class='editor'>

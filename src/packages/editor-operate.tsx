@@ -2,6 +2,7 @@ import { componentConfigKey, TblockConfig, TeditorConfig } from "@/type/editor";
 import { defineComponent, inject, PropType, reactive, watch } from "vue";
 import { ElForm, ElInputNumber, ElFormItem, ElButton, ElInput, ElColorPicker, ElSelect, ElOption } from "element-plus";
 import deepcopy from "deepcopy";
+import TableEditor from "./table-editor";
 
 export default defineComponent({
     props: {
@@ -22,7 +23,6 @@ export default defineComponent({
         }
     },
     setup(props, ctx) {
-        console.log(props.block, props.data)
         const state = reactive<{ editData: any }>({
             editData: {}
         })
@@ -33,7 +33,6 @@ export default defineComponent({
             } else {
                 state.editData = deepcopy(props.block)
             }
-            console.log('操作栏数据 => ',state.editData)
         }
 
         const apply =() => {
@@ -45,6 +44,8 @@ export default defineComponent({
         }
         watch(() => props.block, reset, { immediate: true })
         watch(() => props.data, reset)
+
+        
         return () => {
             const content: any = []
             if (!props.block) {
@@ -58,7 +59,6 @@ export default defineComponent({
                 </>)
             } else {
                 let component = componentConfig?.componentMap[props.block.key]
-                console.log('state.editData',state.editData.props)
                 if (component && component.props) {
                     content.push(Object.entries(component.props).map(([propName, propConfig]: any) => {
                         let map:any = {
@@ -68,7 +68,8 @@ export default defineComponent({
                                 {propConfig.options.map((opt: any) => {
                                     return <ElOption label={opt.label} value={opt.value}></ElOption>
                                 })}
-                            </ElSelect>
+                            </ElSelect>,
+                            table: () => <TableEditor propConfig={propConfig} v-model={state.editData.props[propName]}></TableEditor>   
                         }
                         return <ElFormItem label={propConfig.label}>
                             {map[propConfig.type]()}
@@ -82,7 +83,6 @@ export default defineComponent({
                         </ElFormItem>
                     }))
                 }
-
             }
             return <ElForm labelPosition="top" style={{ padding: '50px' }}>
                 {content}

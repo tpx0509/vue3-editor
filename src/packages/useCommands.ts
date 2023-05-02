@@ -32,7 +32,6 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>, focusData:
     focusBlocks: TblockConfig[];
     unFocusBlocks: TblockConfig[];
 }>) {
-    console.log('data', data.value)
     const state: TCommandsState = {
         current: -1,
         queue: [],
@@ -59,7 +58,6 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>, focusData:
             // 需要入队列，能撤销回退的任务，要在这里加入
             queue.push({ redo, undo })
             state.current++
-            console.log('操作队列', queue)
         }
     }
     // 注册命令，之后注册新的操作命令都在这里维护
@@ -117,7 +115,6 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>, focusData:
             let after = data.value.blocks;
             return {
                 redo() {
-                    console.log('redo,after', after)
                     // 拖拽结束/重做就会执行此函数
                     data.value = {
                         ...data.value,
@@ -125,7 +122,6 @@ export function useCommands(data: WritableComputedRef<TeditorConfig>, focusData:
                     }
                 },
                 undo() {
-                    console.log('undo,before', before)
                     data.value = {
                         ...data.value,
                         blocks: before
