@@ -28,7 +28,8 @@ export type TblockConfig = {
      model:{
           default?: string,
           [key:string]: any
-     }
+     },
+     isResize?:boolean
 }
 
 export const componentConfigKey:InjectionKey<TcomponentConfig> = Symbol('config')

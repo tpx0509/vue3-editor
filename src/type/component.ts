@@ -4,6 +4,10 @@ export type componentConfig = {
     label: string,
     preview: () => JSX.Element,
     render: (params:{
+        size?:{
+            width?: number,
+            height?: number
+        }
       props:TblockConfig['props'],
       model:any
     }) => JSX.Element,
@@ -17,5 +21,10 @@ export type componentConfig = {
     model ?: {
         default?: string,
         [key:string]: any
-    }
+    },
+    resize?: {
+        width?: boolean,
+        height?: boolean
+    },
+    isResize ?: boolean
 }

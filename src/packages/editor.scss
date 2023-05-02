@@ -152,3 +152,52 @@
         margin: 0 4px;
     }
 }
+
+.editor-wrapper {
+    position:absolute;
+    inset: 0;
+    .editor-resize {
+        position: absolute;
+        width:8px;
+        height: 8px;
+        background-color: blue;
+        border-radius: 50%;
+        z-index:1000;
+        user-select: none;
+        &-left {
+            left:-4px;
+            top:calc(50% - 4px);
+        }
+        &-right {
+            right:-4px;
+            top:calc(50% - 4px);
+        }
+        &-top {
+            top:-4px;
+            left:calc(50% - 4px);
+        }
+        &-bottom {
+            bottom:-4px;
+            left:calc(50% - 4px);
+        }
+        &-left-top {
+            left:-4px;
+            top:-4px;
+        }
+        &-left-bottom {
+            left:-4px;
+            bottom:-4px;
+        }
+        &-right-top {
+            right:-4px;
+            top:-4px;
+        }
+        &-right-bottom {
+            right:-4px;
+            bottom:-4px;
+        }
+    }
+}
+.el-button,  .el-input {
+    transition: none;
+}

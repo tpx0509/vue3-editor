@@ -1,5 +1,6 @@
 import { componentConfigKey, TblockConfig } from "@/type/editor";
 import { computed, defineComponent, inject, onMounted, PropType, ref } from "vue";
+import EditorResize from "./editor-resize";
 export default defineComponent({
     props: {
         block: {
@@ -36,6 +37,10 @@ export default defineComponent({
             // 通过block的key获取对应的组件
             const component = config?.componentMap[props.block.key]
             const renderComponent = component?.render({
+                size : props.block.isResize ? {
+                    width: props.block.width,
+                    height: props.block.height
+                }: {},
                 props : props.block.props,
                 model : Object.keys(props.block.model || {}).reduce((result:any,modelName) => {
                     let field = props.block.model[modelName]
@@ -46,12 +51,17 @@ export default defineComponent({
                     return result
                 },{})
             }) // 把每个组件自身的props传入（注意这里不是component的props，这是公共的配置），在render里便可以使用props
+
             return <div
                 class='editor-block'
                 style={blockStyles.value}
                 ref={blockRef}
             >
                 {renderComponent}
+                {/* 传递block的目的是为了修改当前block的宽高，component里面是放了修改宽度还是高度 */}
+                {
+                   props.block.focus && component?.resize && <EditorResize config={component} blockData={props.block}></EditorResize>
+                }
             </div>
         }
     }
